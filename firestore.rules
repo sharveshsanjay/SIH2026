@@ -1,0 +1,224 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && getUserProfile().data.role == "admin";
+    }
+
+    function onlyAffectsKeys(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.email is string
+        && request.resource.data.fullName is string
+        && request.resource.data.name is string
+        && request.resource.data.role in ["admin", "team_member"]
+        && request.resource.data.status in ["active", "away", "offline"]
+        && request.resource.data.active is bool
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && request.auth.uid == userId
+          && (
+            (
+              onlyAffectsKeys(["status", "lastActive"])
+              && request.resource.data.status in ["active", "away", "offline"]
+            )
+            || (
+              request.resource.data.uid == resource.data.uid
+              && request.resource.data.role == resource.data.role
+              && request.resource.data.email is string
+              && request.resource.data.fullName is string
+              && request.resource.data.name is string
+              && request.resource.data.status in ["active", "away", "offline"]
+              && request.resource.data.active is bool
+              && onlyAffectsKeys(["email", "fullName", "name", "profilePhotoUrl", "phoneNumber", "department", "college", "skills", "status", "lastActive", "active", "updatedAt"])
+            )
+          )
+        );
+      allow delete: if isAdmin();
+    }
+
+    match /ideas/{ideaId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.proposedBy == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.proposedByName is string
+        && request.resource.data.status == "pending"
+        && request.resource.data.votes is list
+        && request.resource.data.votes.size() == 0
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && request.resource.data.proposedBy == resource.data.proposedBy
+          && request.resource.data.votes is list
+          && request.resource.data.status == resource.data.status
+          && onlyAffectsKeys(["votes"])
+        );
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.proposedBy == request.auth.uid);
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.status in ["todo", "in_progress", "review", "completed"]
+        && request.resource.data.order is int
+        && request.resource.data.priority is string
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.status in ["todo", "in_progress", "review", "completed"]
+        && request.resource.data.order is int
+        && request.resource.data.priority is string;
+      allow delete: if isAdmin();
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.description is string
+        && request.resource.data.priority in ["low", "medium", "high"]
+        && request.resource.data.createdAt is timestamp;
+      allow update, delete: if isAdmin();
+    }
+
+    match /meetings/{meetingId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.date is string
+        && request.resource.data.createdAt is timestamp;
+      allow update, delete: if isAdmin();
+    }
+
+    match /researchLinks/{linkId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.url is string
+        && request.resource.data.category is string
+        && request.resource.data.tags is list
+        && request.resource.data.createdAt is timestamp;
+      allow update, delete: if isAdmin();
+    }
+
+    match /documents/{documentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uploadedBy == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.documentUrl is string
+        && request.resource.data.uploadedByName is string
+        && request.resource.data.uploadDate is timestamp;
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && resource.data.uploadedBy == request.auth.uid
+          && request.resource.data.uploadedBy == resource.data.uploadedBy
+        );
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.uploadedBy == request.auth.uid);
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn()
+        && request.resource.data.userId is string
+        && request.resource.data.type is string
+        && request.resource.data.title is string
+        && request.resource.data.message is string
+        && request.resource.data.read is bool
+        && request.resource.data.createdAt is timestamp
+        && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin())
+        && request.resource.data.read is bool
+        && onlyAffectsKeys(["read"]);
+    }
+
+    match /activityLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.action is string
+        && request.resource.data.timestamp is timestamp;
+    }
+
+    match /chatRooms/{roomId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.name is string
+        && request.resource.data.lastMessageAt is timestamp;
+      allow update: if isSignedIn()
+        && request.resource.data.lastMessageAt is timestamp
+        && onlyAffectsKeys(["lastMessageAt"]);
+    }
+
+    match /messages/{messageId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.roomId is string
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.senderName is string
+        && request.resource.data.text is string
+        && request.resource.data.readBy is list
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    match /settings/{settingId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /problemStatements/{statementId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.updatedAt is timestamp;
+      allow update, delete: if isAdmin();
+    }
+
+    match /timelines/{milestoneId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.status in ["Not Started", "In Progress", "Completed", "On Hold", "Delayed"]
+        && request.resource.data.priority in ["Low", "Medium", "High", "Critical"]
+        && request.resource.data.progress is int
+        && request.resource.data.order is int
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isSignedIn()
+        && request.resource.data.title is string
+        && request.resource.data.status in ["Not Started", "In Progress", "Completed", "On Hold", "Delayed"]
+        && request.resource.data.priority in ["Low", "Medium", "High", "Critical"]
+        && request.resource.data.progress is int
+        && request.resource.data.order is int;
+      allow delete: if isAdmin();
+    }
+
+    match /analytics/{analyticsId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}
