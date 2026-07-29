@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Users, Github, Linkedin, Globe, Mail, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,15 +25,51 @@ import {
 
 const PAGE_SIZE = 9;
 
+
 export default function TeamPage() {
   const { data: users, loading } = useCollection<User>(COLLECTIONS.users);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [page, setPage] = useState(1);
 
+  useEffect(() => {
+    console.table(
+      users.map((u) => ({
+        name: u.fullName,
+        uid: u.uid,
+        status: u.status,
+        lastActive: u.lastActive,
+      }))
+    );
+  }, [users]);
+
+  const dedupedUsers = useMemo(() => {
+    const map = new Map<string, User>();
+    users.forEach((user) => {
+      const key = user.uid || user.id;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, user);
+        return;
+      }
+
+      const existingLastActive = existing.lastActive && typeof existing.lastActive === "object" && "seconds" in existing.lastActive
+        ? (existing.lastActive as any).seconds
+        : 0;
+      const candidateLastActive = user.lastActive && typeof user.lastActive === "object" && "seconds" in user.lastActive
+        ? (user.lastActive as any).seconds
+        : 0;
+
+      if (candidateLastActive > existingLastActive) {
+        map.set(key, user);
+      }
+    });
+    return Array.from(map.values());
+  }, [users]);
+
   const filtered = useMemo(() => {
     const q = (search || "").toString().toLowerCase();
-    return users.filter((u) => {
+    return dedupedUsers.filter((u) => {
       const fullName = u.fullName?.toString().toLowerCase() ?? "";
       const email = u.email?.toString().toLowerCase() ?? "";
       const department = u.department?.toString().toLowerCase() ?? "";
@@ -44,7 +80,7 @@ export default function TeamPage() {
       const matchRole = roleFilter === "all" || u.role === roleFilter;
       return matchSearch && matchRole;
     });
-  }, [users, search, roleFilter]);
+  }, [dedupedUsers, search, roleFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
   const paginated = paginate(filtered, page, PAGE_SIZE);

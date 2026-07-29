@@ -34,22 +34,24 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (
           isSignedIn()
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && onlyAffectsKeys(["status", "lastActive"])
+          && request.resource.data.status in ["active", "away", "offline"]
+          && request.resource.data.lastActive is timestamp
+        )
+        || (
+          isSignedIn()
           && request.auth.uid == userId
           && (
-            (
-              onlyAffectsKeys(["status", "lastActive"])
-              && request.resource.data.status in ["active", "away", "offline"]
-            )
-            || (
-              request.resource.data.uid == resource.data.uid
-              && request.resource.data.role == resource.data.role
-              && request.resource.data.email is string
-              && request.resource.data.fullName is string
-              && request.resource.data.name is string
-              && request.resource.data.status in ["active", "away", "offline"]
-              && request.resource.data.active is bool
-              && onlyAffectsKeys(["email", "fullName", "name", "profilePhotoUrl", "phoneNumber", "department", "college", "skills", "status", "lastActive", "active", "updatedAt"])
-            )
+            request.resource.data.uid == resource.data.uid
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.email is string
+            && request.resource.data.fullName is string
+            && request.resource.data.name is string
+            && request.resource.data.status in ["active", "away", "offline"]
+            && request.resource.data.active is bool
+            && onlyAffectsKeys(["email", "fullName", "name", "profilePhotoUrl", "phoneNumber", "department", "college", "skills", "status", "lastActive", "active", "updatedAt"])
           )
         );
       allow delete: if isAdmin();
@@ -94,12 +96,9 @@ service cloud.firestore {
 
     match /announcements/{announcementId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn()
-        && request.resource.data.title is string
-        && request.resource.data.description is string
-        && request.resource.data.priority in ["low", "medium", "high"]
-        && request.resource.data.createdAt is timestamp;
-      allow update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if true;
+      allow delete: if isAdmin();
     }
 
     match /meetings/{meetingId} {
@@ -213,7 +212,7 @@ service cloud.firestore {
         && request.resource.data.priority in ["Low", "Medium", "High", "Critical"]
         && request.resource.data.progress is int
         && request.resource.data.order is int;
-      allow delete: if isAdmin();
+      allow delete: if isSignedIn();
     }
 
     match /analytics/{analyticsId} {
