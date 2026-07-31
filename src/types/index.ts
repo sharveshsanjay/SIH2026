@@ -172,10 +172,12 @@ export interface ChatMessage {
   roomId: string;
   senderId: string;
   senderName: string;
+  recipientId?: string;
+  recipientName?: string;
   text: string;
   replyToId?: string;
   readBy: string[];
-  createdAt?: Date | { toDate: () => Date };
+  createdAt?: Date | { toDate: () => Date } | { seconds: number; nanoseconds: number } | ReturnType<typeof import("firebase/firestore").serverTimestamp>;
 }
 
 export interface PlatformSettings {

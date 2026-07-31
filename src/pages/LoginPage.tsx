@@ -255,56 +255,121 @@ export default function LoginPage() {
             Secure internal workspace for authorized team members. Collaborate, manage projects, and access resources through a unified platform.
           </p>
 
-          {/* Stats Cards - 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group">
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="p-2 bg-blue-400/10 rounded-xl group-hover:bg-blue-400/20 transition-colors">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <span className="text-white font-bold text-xl">24+</span>
-              </div>
-              <p className="text-gray-400 text-xs font-medium">Teams</p>
-            </div>
+          {/* SIH Platform Features */}
+<div className="grid grid-cols-2 gap-4">
+  {/* Problem Statements */}
+  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="p-2 bg-blue-400/10 rounded-xl group-hover:bg-blue-400/20 transition-colors">
+        <svg
+          className="w-5 h-5 text-blue-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"
+          />
+        </svg>
+      </div>
+      <span className="text-white font-semibold text-lg">
+        Problem Statements
+      </span>
+    </div>
 
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group">
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="p-2 bg-cyan-400/10 rounded-xl group-hover:bg-cyan-400/20 transition-colors">
-                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <span className="text-white font-bold text-xl">100+</span>
-              </div>
-              <p className="text-gray-400 text-xs font-medium">Participants</p>
-            </div>
+    <p className="text-gray-400 text-sm leading-relaxed">
+      Explore real-world challenges from government ministries and industry
+      partners.
+    </p>
+  </div>
 
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group">
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="p-2 bg-purple-400/10 rounded-xl group-hover:bg-purple-400/20 transition-colors">
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <span className="text-white font-bold text-xl">12</span>
-              </div>
-              <p className="text-gray-400 text-xs font-medium">Mentors</p>
-            </div>
+  {/* Team Collaboration */}
+  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 group">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="p-2 bg-cyan-400/10 rounded-xl group-hover:bg-cyan-400/20 transition-colors">
+        <svg
+          className="w-5 h-5 text-cyan-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"
+          />
+        </svg>
+      </div>
+      <span className="text-white font-semibold text-lg">
+        Team Collaboration
+      </span>
+    </div>
 
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 group">
-              <div className="flex items-center gap-3 mb-1.5">
-                <div className="p-2 bg-green-400/10 rounded-xl group-hover:bg-green-400/20 transition-colors">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <span className="text-white font-bold text-xl">SIH</span>
-              </div>
-              <p className="text-gray-400 text-xs font-medium">Internal Access</p>
-            </div>
-          </div>
+    <p className="text-gray-400 text-sm leading-relaxed">
+      Coordinate tasks, share ideas, and build innovative solutions together.
+    </p>
+  </div>
+
+  {/* Innovation Hub */}
+  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 group">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="p-2 bg-purple-400/10 rounded-xl group-hover:bg-purple-400/20 transition-colors">
+        <svg
+          className="w-5 h-5 text-purple-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0"
+          />
+        </svg>
+      </div>
+      <span className="text-white font-semibold text-lg">
+        Innovation Hub
+      </span>
+    </div>
+
+    <p className="text-gray-400 text-sm leading-relaxed">
+      Design, prototype, and refine impactful ideas into practical solutions.
+    </p>
+  </div>
+
+  {/* Final Evaluation */}
+  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 group">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="p-2 bg-green-400/10 rounded-xl group-hover:bg-green-400/20 transition-colors">
+        <svg
+          className="w-5 h-5 text-green-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <span className="text-white font-semibold text-lg">
+        Final Evaluation
+      </span>
+    </div>
+
+    <p className="text-gray-400 text-sm leading-relaxed">
+      Submit your project and present innovative solutions before the jury.
+    </p>
+  </div>
+</div>
 
           {/* Tech tags */}
           <div className="mt-6 flex flex-wrap items-center gap-2 text-gray-400/50 text-xs">

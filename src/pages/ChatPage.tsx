@@ -240,7 +240,7 @@ const DateSeparator = memo(({ date }: { date: Date }) => {
 DateSeparator.displayName = 'DateSeparator';
 
 // Member List Item
-const MemberItem = memo(({ user, status }: { user: User; status: "online" | "away" | "offline" }) => {
+const MemberItem = memo(({ user, status, isActive, onSelect }: { user: User; status: "online" | "away" | "offline"; isActive?: boolean; onSelect?: () => void }) => {
   const statusConfig = {
     online: {
       dot: "bg-emerald-500",
@@ -260,7 +260,14 @@ const MemberItem = memo(({ user, status }: { user: User; status: "online" | "awa
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-slate-50 transition-all">
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "w-full text-left flex items-center gap-3 rounded-xl px-3 py-2 transition-all",
+        isActive ? "bg-slate-100 border border-slate-200" : "hover:bg-slate-50"
+      )}
+    >
       <div className="relative flex-shrink-0">
         <SafeAvatar
           src={user.profilePhotoUrl}
@@ -294,7 +301,7 @@ const MemberItem = memo(({ user, status }: { user: User; status: "online" | "awa
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 });
 
@@ -307,8 +314,22 @@ export default function ChatPage() {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [showMembers, setShowMembers] = useState(true);
+  const [activeChatUser, setActiveChatUser] = useState<User | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const directRoomId = useMemo(() => {
+    if (!activeChatUser || !userProfile) return ROOM_ID;
+    const currentId = userProfile.uid ?? userProfile.id;
+    const otherId = activeChatUser.uid ?? activeChatUser.id;
+    return `dm:${[currentId, otherId].sort().join(":")}`;
+  }, [activeChatUser, userProfile]);
+
+  const activeRoomTitle = useMemo(() => {
+    return activeChatUser ? `Chat with ${activeChatUser.fullName}` : "General Chat";
+  }, [activeChatUser]);
+
+  const activeRoomId = activeChatUser ? directRoomId : ROOM_ID;
 
   // Online status mock (using collection data for demo)
   const userStatuses = useMemo(() => {
@@ -345,7 +366,7 @@ export default function ChatPage() {
   useEffect(() => {
     const q = query(
       collection(db, COLLECTIONS.messages),
-      where("roomId", "==", ROOM_ID),
+      where("roomId", "==", activeRoomId),
       orderBy("createdAt", "asc"),
       limit(200)
     );
@@ -353,7 +374,7 @@ export default function ChatPage() {
       setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ChatMessage));
     });
     return unsub;
-  }, []);
+  }, [activeRoomId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -368,17 +389,26 @@ export default function ChatPage() {
     try {
       const senderId = userProfile.uid ?? userProfile.id;
       const senderName = userProfile.fullName ?? userProfile.email ?? senderId;
-      await addDoc(collection(db, COLLECTIONS.messages), {
-        roomId: ROOM_ID,
+      const messagePayload: Partial<ChatMessage> = {
+        roomId: activeRoomId,
         senderId,
         senderName,
         text: text.trim(),
         readBy: [senderId],
         createdAt: serverTimestamp(),
-      });
-      await updateDoc(doc(db, COLLECTIONS.chatRooms, ROOM_ID), { 
-        lastMessageAt: serverTimestamp() 
-      });
+      };
+
+      if (activeChatUser) {
+        messagePayload.recipientId = activeChatUser.uid ?? activeChatUser.id;
+        messagePayload.recipientName = activeChatUser.fullName;
+      }
+
+      await addDoc(collection(db, COLLECTIONS.messages), messagePayload);
+      if (!activeChatUser) {
+        await updateDoc(doc(db, COLLECTIONS.chatRooms, ROOM_ID), { 
+          lastMessageAt: serverTimestamp() 
+        });
+      }
       setText("");
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -386,7 +416,7 @@ export default function ChatPage() {
     } finally {
       setSending(false);
     }
-  }, [text, userProfile, sending]);
+  }, [text, userProfile, sending, activeRoomId, activeChatUser]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -477,6 +507,14 @@ export default function ChatPage() {
                 <MemberItem
                   key={user.id}
                   user={user}
+                  isActive={activeChatUser?.id === user.id}
+                  onSelect={() => {
+                    if (user.id === userProfile?.id) {
+                      setActiveChatUser(null);
+                    } else {
+                      setActiveChatUser(user);
+                    }
+                  }}
                   status={
                     user.status === "active"
                       ? "online"
@@ -505,7 +543,10 @@ export default function ChatPage() {
               </Button>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-slate-900">General Chat</h2>
+                  <h2 className="text-sm font-semibold text-slate-900">{activeRoomTitle}</h2>
+                  {activeChatUser && (
+                    <Badge variant="secondary">Direct</Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-500">
                   <span>{users?.length || 0} members</span>
@@ -518,14 +559,23 @@ export default function ChatPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowMembers(!showMembers)}
-                className="hidden lg:flex"
-              >
-                <UserPlus className="h-4 w-4 text-slate-500" />
-              </Button>
+                {activeChatUser && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveChatUser(null)}
+                  >
+                    General
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowMembers(!showMembers)}
+                  className="hidden lg:flex"
+                >
+                  <UserPlus className="h-4 w-4 text-slate-500" />
+                </Button>
               <Button variant="ghost" size="sm">
                 <Search className="h-4 w-4 text-slate-500" />
               </Button>
